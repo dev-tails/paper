@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --minify --outfile=static/js/paper.js",
-    "build:w": "npm run build -- --watch"
+    "build:w": "npm run build -- --watch",
+    "deploy": "rsync -r static engram@engram:~/paper"
   },
   "author": "",
   "license": "ISC",

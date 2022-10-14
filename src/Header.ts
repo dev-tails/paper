@@ -9,7 +9,8 @@ export const Header = () => {
     display: "flex",
     justifyContent: "space-between",
     borderBottom: `1px solid #333`,
-    padding: "4px 8px"
+    padding: "4px 8px",
+    height: "27px"
   });
 
   const leftDiv = Div();
