@@ -1,0 +1,15 @@
+{
+  "name": "@engramhq/paper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --outfile=static/js/paper.js",
+    "build:w": "npm run build -- --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.15.11"
+  }
+}
