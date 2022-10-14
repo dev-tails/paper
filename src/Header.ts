@@ -2,7 +2,11 @@ import { Button } from "./Button";
 import { Div } from "./Div";
 import { setStyle } from "./setStyle";
 
-export const Header = () => {
+export type HeaderProps = {
+  onAddClicked: () => void;
+}
+
+export const Header = ({ onAddClicked }: HeaderProps) => {
   const el = Div();
 
   setStyle(el, {
@@ -47,7 +51,9 @@ export const Header = () => {
 
   const btnNew = Button({
     text: "➕",
-    onClick() {},
+    onClick() {
+      onAddClicked();
+    },
   });
   rightDiv.append(btnNew);
 
