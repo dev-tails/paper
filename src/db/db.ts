@@ -6,17 +6,15 @@ export type Point = {
   y: number;
 }
 
-export type Block = Partial<{
-  localId: string;
-  body: string;
-  content: string;
+export type Block = {
+  localId?: string;
   createdAt: Date;
   data: {
     drawings: Array<{
       points: Point[];
     }>
   }
-}>;
+};
 
 interface EngramDB extends DBSchema {
   blocks: {

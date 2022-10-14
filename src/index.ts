@@ -1,4 +1,4 @@
-import { addBlock, getAllBlocks, Block, getBlock, Point } from "./db/db";
+import { addBlock, getAllBlocks, Block, getBlock, Point, updateBlock } from "./db/db";
 import { Header } from "./Header";
 import { setStyle } from "./setStyle";
 
@@ -14,33 +14,45 @@ async function init() {
 
   setStyle(root, {});
 
-  const drawings: Array<{ points: Point[] }> = [];
-
-  root.append(
-    Header({
-      onAddClicked() {
-        addBlock({
-          data: {
-            drawings,
-          },
-        });
-      },
-    })
-  );
-
   const canvas = document.createElement("canvas");
   setStyle(canvas, {
     width: "100%",
     height: "calc(100vh - 36px)",
     overflowY: "hidden",
   });
-  root.append(canvas);
-
   const ctx = canvas.getContext && canvas.getContext("2d");
   if (!ctx) {
     alert("Cannot find 2d context");
     return;
   }
+
+  const header = Header({
+    onSaveClicked() {
+      if (currentBlock.localId) {
+        updateBlock({
+          ...currentBlock
+        })
+      } else {
+        addBlock(currentBlock)
+      }
+    },
+    onAddClicked() {
+      currentBlock = {
+        createdAt: new Date(),
+        data: {
+          drawings: []
+        }
+      }
+      console.log("ADD")
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    },
+  })
+
+  root.append(header);
+
+  root.append(canvas);
+
+  
 
   const dpr = window.devicePixelRatio;
   const rect = canvas.getBoundingClientRect();
@@ -56,12 +68,22 @@ async function init() {
   canvas.style.width = `${rect.width}px`;
   canvas.style.height = `${rect.height}px`;
 
+  let currentBlock: Block = {
+    createdAt: new Date(),
+    data: {
+      drawings: []
+    }
+  };
   const blocks = await getAllBlocks();
+
+  const sortedBlocks = blocks.sort((a, b) => {
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  })
+
   if (blocks.length > 0) {
-    const block = blocks[blocks.length - 1];
-    console.log(block);
+    currentBlock = blocks[blocks.length - 1];
     
-    for (const drawing of block?.data?.drawings || []) {
+    for (const drawing of currentBlock?.data?.drawings || []) {
       ctx.beginPath();
       let isFirstPoint = true;
       for (const point of drawing.points) {
@@ -85,7 +107,7 @@ async function init() {
 
     drawing = true;
 
-    drawings.push({ points: [{ x, y }] });
+    currentBlock.data.drawings.push({ points: [{ x, y }] });
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -93,7 +115,7 @@ async function init() {
 
   const draw = (x: number, y: number) => {
     if (drawing) {
-      drawings[drawings.length - 1].points.push({ x, y });
+      currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
       ctx.lineTo(x, y);
       ctx.stroke();
     }
@@ -104,7 +126,7 @@ async function init() {
       return;
     }
 
-    drawings[drawings.length - 1].points.push({ x, y });
+    currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
 
     drawing = false;
 
