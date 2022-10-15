@@ -2,8 +2,6 @@ import {
   addBlock,
   getAllBlocks,
   Block,
-  getBlock,
-  Point,
   updateBlock,
   removeBlock,
 } from "./db/db";
@@ -34,12 +32,12 @@ async function init() {
     return;
   }
 
-  ctx.translate(0.5, 0.5);
+  // ctx.translate(0.5, 0.5);
 
   const blocks = await getAllBlocks();
   let currentBlockIndex = -1;
 
-  const setBlock = (block: Block | null) => {
+  const setBlock = (block: Block) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     currentBlock = block;
 
@@ -194,56 +192,35 @@ async function init() {
     passive: false,
   });
 
-  canvas.addEventListener(
-    "touchstart",
-    (e) => {
-      e.stopPropagation();
-      e.preventDefault();
+  const allowedPointers = ["mouse", "pen"];
 
-      if ((e.touches[0] as any).touchType === "stylus") {
-        startDrawing(e.touches[0].clientX, e.touches[0].clientY - 36);
+  canvas.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (allowedPointers.includes(e.pointerType)) {
+        startDrawing(e.offsetX, e.offsetY);
       }
-    },
-    { passive: false }
+    }
   );
 
   canvas.addEventListener(
-    "touchmove",
+    "pointermove",
     (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      if ((e.touches[0] as any).touchType === "stylus") {
-        draw(e.touches[0].clientX, e.touches[0].clientY - 36);
+      if (allowedPointers.includes(e.pointerType)) {
+        draw(e.offsetX, e.offsetY);
       }
-    },
-    { passive: false }
+    }
   );
 
   canvas.addEventListener(
-    "touchend",
+    "pointerup",
     (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      if ((e.touches[0] as any).touchType === "stylus") {
-        startDrawing(e.touches[0].clientX, e.touches[0].clientY - 36);
+      if (allowedPointers.includes(e.pointerType)) {
+        endDrawing(e.offsetX, e.offsetY);
       }
     },
-    { passive: false }
+    true
   );
-
-  canvas.addEventListener("mousedown", (e) => {
-    startDrawing(e.offsetX, e.offsetY);
-  });
-
-  canvas.addEventListener("mousemove", (e) => {
-    draw(e.offsetX, e.offsetY);
-  });
-
-  canvas.addEventListener("mouseup", (e) => {
-    endDrawing(e.offsetX, e.offsetY);
-  });
 }
 
 init();
