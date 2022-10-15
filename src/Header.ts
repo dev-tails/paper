@@ -8,13 +8,15 @@ export type HeaderProps = {
   onLeftClicked: () => void;
   onRightClicked: () => void;
   onDeleteClicked: () => void;
+  onToolChanged: (tool: "pencil" | "eraser") => void;
 };
 
 export const Header = ({
   onAddClicked,
   onLeftClicked,
   onRightClicked,
-  onDeleteClicked
+  onDeleteClicked,
+  onToolChanged
 }: HeaderProps) => {
   const el = Div();
 
@@ -63,10 +65,23 @@ export const Header = ({
   });
   rightDiv.append(btnTrash);
 
+  let isPencil = true;
   const btnPencil = Button({
     text: "✏️",
-    onClick() {},
+    onClick() {
+      isPencil = !isPencil;
+      if (isPencil) {
+        btnPencil.style.transform = 'scaleX(-1)'
+      } else {
+        btnPencil.style.transform = 'scaleX(-1) rotate(180deg)'
+      }
+      onToolChanged(isPencil ? "pencil" : "eraser");
+    },
   });
+  setStyle(btnPencil, {
+    transition: "transform 200ms",
+    transform: "scaleX(-1)"
+  })
   rightDiv.append(btnPencil);
 
   const btnNew = Button({

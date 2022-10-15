@@ -35,8 +35,13 @@ async function init() {
   let currentBlockIndex = -1;
 
   const setBlock = (block: Block) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     currentBlock = block;
+
+    redraw();
+  };
+
+  const redraw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (const drawing of currentBlock?.data?.drawings || []) {
       ctx.beginPath();
@@ -51,7 +56,7 @@ async function init() {
         }
       }
     }
-  };
+  }
 
   function handleLeft() {
     if (currentBlockIndex > 0) {
@@ -78,6 +83,8 @@ async function init() {
     setBlock(newBlock);
   }
 
+  let currentTool = "pencil";
+
   const header = Header({
     onLeftClicked: handleLeft,
     onRightClicked: handleRight,
@@ -96,6 +103,9 @@ async function init() {
       }
     },
     onAddClicked: handleNewBlock,
+    onToolChanged(tool) {
+      currentTool = tool;
+    }
   });
 
   root.append(canvas);
@@ -149,11 +159,32 @@ async function init() {
 
   const draw = (x: number, y: number) => {
     if (drawing) {
-      currentBlock.data.drawings[
-        currentBlock.data.drawings.length - 1
-      ].points.push({ x, y });
-      ctx.lineTo(x, y);
-      ctx.stroke();
+      if (currentTool === "pencil") {
+        currentBlock.data.drawings[
+          currentBlock.data.drawings.length - 1
+        ].points.push({ x, y });
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      } else if(currentTool === "eraser") {
+        const drawingsToRemove: any[] = [];
+        for (const drawing of currentBlock.data.drawings) {
+          for (const point of drawing.points) {
+            const eraserDistanceThreshold = 5;
+            if (Math.abs(point.x - x) < eraserDistanceThreshold && Math.abs(point.y - y) < eraserDistanceThreshold) {
+              drawingsToRemove.push(drawing);
+              break;
+            }
+          }
+        }
+
+        if (drawingsToRemove.length > 0) {
+          currentBlock.data.drawings = currentBlock.data.drawings.filter((d) => {
+            return !drawingsToRemove.includes(d);
+          });
+  
+          redraw();
+        }
+      }
     }
   };
 
@@ -164,12 +195,7 @@ async function init() {
 
     drawing = false;
 
-    ctx.lineTo(x, y);
-    ctx.stroke();
-
-    currentBlock.data.drawings[
-      currentBlock.data.drawings.length - 1
-    ].points.push({ x, y });
+    draw(x, y);
 
     if (currentBlock.localId) {
       await updateBlock({
