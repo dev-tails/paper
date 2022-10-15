@@ -6,12 +6,14 @@ export type HeaderProps = {
   onAddClicked: () => void;
   onLeftClicked: () => void;
   onRightClicked: () => void;
+  onDeleteClicked: () => void;
 };
 
 export const Header = ({
   onAddClicked,
   onLeftClicked,
   onRightClicked,
+  onDeleteClicked
 }: HeaderProps) => {
   const el = Div();
 
@@ -50,7 +52,9 @@ export const Header = ({
 
   const btnTrash = Button({
     text: "🗑️",
-    onClick() {},
+    onClick() {
+      onDeleteClicked();
+    },
   });
   rightDiv.append(btnTrash);
 

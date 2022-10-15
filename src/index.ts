@@ -5,6 +5,7 @@ import {
   getBlock,
   Point,
   updateBlock,
+  removeBlock,
 } from "./db/db";
 import { Header } from "./Header";
 import { setStyle } from "./setStyle";
@@ -38,7 +39,7 @@ async function init() {
   const blocks = await getAllBlocks();
   let currentBlockIndex = -1;
 
-  const setBlock = (block: Block) => {
+  const setBlock = (block: Block | null) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     currentBlock = block;
 
@@ -57,27 +58,49 @@ async function init() {
     }
   };
 
+  function handleLeft() {
+    if (currentBlockIndex > 0) {
+      currentBlockIndex--;
+      setBlock(sortedBlocks[currentBlockIndex]);
+    }
+  }
+
+  function handleRight() {
+    if (currentBlockIndex < sortedBlocks.length - 1) {
+      currentBlockIndex++;
+    }
+    setBlock(sortedBlocks[currentBlockIndex]);
+  }
+
+  async function handleNewBlock() {
+    const newBlock = await addBlock({
+      data: {
+        drawings: [],
+      },
+    });
+    sortedBlocks.push(newBlock);
+    currentBlockIndex++;
+    setBlock(newBlock);
+  }
+
   const header = Header({
-    onLeftClicked() {
-      if (currentBlockIndex > 0) {
-        currentBlockIndex--;
+    onLeftClicked: handleLeft,
+    onRightClicked: handleRight,
+    async onDeleteClicked() {
+      await removeBlock(currentBlock.localId);
+      sortedBlocks = sortedBlocks.filter((b) => {
+        return b.localId !== currentBlock.localId
+      })
+      if (sortedBlocks.length) {
+        if (currentBlockIndex > sortedBlocks.length - 1) {
+          currentBlockIndex--;
+        } 
+        setBlock(sortedBlocks[currentBlockIndex])
+      } else {
+        handleNewBlock();
       }
-      setBlock(sortedBlocks[currentBlockIndex]);
     },
-    onRightClicked() {
-      if (currentBlockIndex < sortedBlocks.length - 1) {
-        currentBlockIndex++;
-      }
-      setBlock(sortedBlocks[currentBlockIndex]);
-    },
-    async onAddClicked() {
-      const newBlock = await addBlock({
-        data: {
-          drawings: [],
-        },
-      });
-      setBlock(newBlock);
-    },
+    onAddClicked: handleNewBlock,
   });
 
   root.append(header);
@@ -105,7 +128,7 @@ async function init() {
     },
   };
 
-  const sortedBlocks = blocks.sort((a, b) => {
+  let sortedBlocks = blocks.sort((a, b) => {
     return a.createdAt.getTime() - b.createdAt.getTime();
   });
 
