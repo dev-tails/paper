@@ -4,9 +4,15 @@ import { setStyle } from "./setStyle";
 
 export type HeaderProps = {
   onAddClicked: () => void;
-}
+  onLeftClicked: () => void;
+  onRightClicked: () => void;
+};
 
-export const Header = ({ onAddClicked }: HeaderProps) => {
+export const Header = ({
+  onAddClicked,
+  onLeftClicked,
+  onRightClicked,
+}: HeaderProps) => {
   const el = Div();
 
   setStyle(el, {
@@ -14,29 +20,33 @@ export const Header = ({ onAddClicked }: HeaderProps) => {
     justifyContent: "space-between",
     borderBottom: `1px solid #333`,
     padding: "4px 8px",
-    height: "27px"
+    height: "27px",
   });
 
   const leftDiv = Div();
   setStyle(leftDiv, {
-    display: "flex"
-  })
+    display: "flex",
+  });
   const btnLeft = Button({
     text: "<",
-    onClick() {},
+    onClick() {
+      onLeftClicked();
+    },
   });
   leftDiv.append(btnLeft);
 
   const btnRight = Button({
     text: ">",
-    onClick() {},
+    onClick() {
+      onRightClicked();
+    },
   });
   leftDiv.append(btnRight);
 
   const rightDiv = Div();
   setStyle(rightDiv, {
-    display: "flex"
-  })
+    display: "flex",
+  });
 
   const btnTrash = Button({
     text: "🗑️",

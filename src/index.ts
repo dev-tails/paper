@@ -1,4 +1,11 @@
-import { addBlock, getAllBlocks, Block, getBlock, Point, updateBlock } from "./db/db";
+import {
+  addBlock,
+  getAllBlocks,
+  Block,
+  getBlock,
+  Point,
+  updateBlock,
+} from "./db/db";
 import { Header } from "./Header";
 import { setStyle } from "./setStyle";
 
@@ -28,18 +35,50 @@ async function init() {
 
   ctx.translate(0.5, 0.5);
 
-  const header = Header({
-    onAddClicked() {
-      currentBlock = {
-        createdAt: new Date(),
-        data: {
-          drawings: []
+  const blocks = await getAllBlocks();
+  let currentBlockIndex = -1;
+
+  const setBlock = (block: Block) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    currentBlock = block;
+
+    for (const drawing of currentBlock?.data?.drawings || []) {
+      ctx.beginPath();
+      let isFirstPoint = true;
+      for (const point of drawing.points) {
+        if (isFirstPoint) {
+          ctx.moveTo(point.x, point.y);
+          isFirstPoint = false;
+        } else {
+          ctx.lineTo(point.x, point.y);
+          ctx.stroke();
         }
       }
-      console.log("ADD")
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
+  const header = Header({
+    onLeftClicked() {
+      if (currentBlockIndex > 0) {
+        currentBlockIndex--;
+      }
+      setBlock(sortedBlocks[currentBlockIndex]);
     },
-  })
+    onRightClicked() {
+      if (currentBlockIndex < sortedBlocks.length - 1) {
+        currentBlockIndex++;
+      }
+      setBlock(sortedBlocks[currentBlockIndex]);
+    },
+    async onAddClicked() {
+      const newBlock = await addBlock({
+        data: {
+          drawings: [],
+        },
+      });
+      setBlock(newBlock);
+    },
+  });
 
   root.append(header);
 
@@ -62,31 +101,18 @@ async function init() {
   let currentBlock: Block = {
     createdAt: new Date(),
     data: {
-      drawings: []
-    }
+      drawings: [],
+    },
   };
-  const blocks = await getAllBlocks();
 
   const sortedBlocks = blocks.sort((a, b) => {
     return a.createdAt.getTime() - b.createdAt.getTime();
-  })
+  });
 
-  if (blocks.length > 0) {
-    currentBlock = blocks[blocks.length - 1];
-    
-    for (const drawing of currentBlock?.data?.drawings || []) {
-      ctx.beginPath();
-      let isFirstPoint = true;
-      for (const point of drawing.points) {
-        if (isFirstPoint) {
-          ctx.moveTo(point.x, point.y);
-          isFirstPoint = false;
-        } else {
-          ctx.lineTo(point.x, point.y);
-          ctx.stroke();
-        }
-      }
-    }
+  if (sortedBlocks.length > 0) {
+    currentBlockIndex = sortedBlocks.length - 1;
+
+    setBlock(sortedBlocks[currentBlockIndex]);
   }
 
   let drawing = false;
@@ -106,7 +132,9 @@ async function init() {
 
   const draw = (x: number, y: number) => {
     if (drawing) {
-      currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
+      currentBlock.data.drawings[
+        currentBlock.data.drawings.length - 1
+      ].points.push({ x, y });
       ctx.lineTo(x, y);
       ctx.stroke();
     }
@@ -122,14 +150,16 @@ async function init() {
     ctx.lineTo(x, y);
     ctx.stroke();
 
-    currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
+    currentBlock.data.drawings[
+      currentBlock.data.drawings.length - 1
+    ].points.push({ x, y });
 
     if (currentBlock.localId) {
       await updateBlock({
-        ...currentBlock
-      })
+        ...currentBlock,
+      });
     } else {
-      currentBlock = await addBlock(currentBlock)
+      currentBlock = await addBlock(currentBlock);
     }
   };
 

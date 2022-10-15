@@ -43,14 +43,14 @@ export function getDb() {
   return _db;
 }
 
-export async function addBlock(value: EngramDB["blocks"]["value"]) {
+export async function addBlock(value: Partial<Block>) {
   const db = await getDb();
 
   const localId = uuidv4();
   const date = new Date();
   const addedBlock = { ...value, localId, createdAt: date };
-  await db.add("blocks", addedBlock);
-  return addedBlock;
+  await db.add("blocks", addedBlock as Block);
+  return addedBlock as Block;
 }
 
 export async function updateBlock(value: EngramDB["blocks"]["value"]) {
