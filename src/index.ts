@@ -18,13 +18,10 @@ async function init() {
     return;
   }
 
-  setStyle(root, {});
-
   const canvas = document.createElement("canvas");
   setStyle(canvas, {
     width: "100%",
-    height: "calc(100vh - 36px)",
-    overflowY: "hidden",
+    height: "100%",
   });
   const ctx = canvas.getContext && canvas.getContext("2d");
   if (!ctx) {
@@ -32,7 +29,7 @@ async function init() {
     return;
   }
 
-  // ctx.translate(0.5, 0.5);
+  ctx.translate(0.5, 0.5);
 
   const blocks = await getAllBlocks();
   let currentBlockIndex = -1;
@@ -101,9 +98,8 @@ async function init() {
     onAddClicked: handleNewBlock,
   });
 
-  root.append(header);
-
   root.append(canvas);
+  root.append(header);
 
   const dpr = window.devicePixelRatio;
   const rect = canvas.getBoundingClientRect();

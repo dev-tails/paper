@@ -1,4 +1,5 @@
 import { Button } from "./Button";
+import { Color } from "./Color";
 import { Div } from "./Div";
 import { setStyle } from "./setStyle";
 
@@ -20,9 +21,13 @@ export const Header = ({
   setStyle(el, {
     display: "flex",
     justifyContent: "space-between",
-    borderBottom: `1px solid #333`,
-    padding: "4px 8px",
-    height: "27px",
+    borderTop: `1px solid #333`,
+    padding: "0 8px",
+    position: "absolute",
+    bottom: "0",
+    left: "0",
+    right: "0",
+    backgroundColor: Color.BG
   });
 
   const leftDiv = Div();
