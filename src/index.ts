@@ -26,6 +26,8 @@ async function init() {
     return;
   }
 
+  ctx.translate(0.5, 0.5);
+
   const header = Header({
     onSaveClicked() {
       if (currentBlock.localId) {
