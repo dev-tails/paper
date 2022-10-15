@@ -4,10 +4,9 @@ import { setStyle } from "./setStyle";
 
 export type HeaderProps = {
   onAddClicked: () => void;
-  onSaveClicked: () => void;
 }
 
-export const Header = ({ onAddClicked, onSaveClicked }: HeaderProps) => {
+export const Header = ({ onAddClicked }: HeaderProps) => {
   const el = Div();
 
   setStyle(el, {
@@ -38,13 +37,6 @@ export const Header = ({ onAddClicked, onSaveClicked }: HeaderProps) => {
   setStyle(rightDiv, {
     display: "flex"
   })
-  const btnSave = Button({
-    text: "💾",
-    onClick() {
-      onSaveClicked()
-    }
-  })
-  rightDiv.append(btnSave);
 
   const btnTrash = Button({
     text: "🗑️",

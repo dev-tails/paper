@@ -29,15 +29,6 @@ async function init() {
   ctx.translate(0.5, 0.5);
 
   const header = Header({
-    onSaveClicked() {
-      if (currentBlock.localId) {
-        updateBlock({
-          ...currentBlock
-        })
-      } else {
-        addBlock(currentBlock)
-      }
-    },
     onAddClicked() {
       currentBlock = {
         createdAt: new Date(),
@@ -53,8 +44,6 @@ async function init() {
   root.append(header);
 
   root.append(canvas);
-
-  
 
   const dpr = window.devicePixelRatio;
   const rect = canvas.getBoundingClientRect();
@@ -123,17 +112,25 @@ async function init() {
     }
   };
 
-  const endDrawing = (x: number, y: number) => {
+  const endDrawing = async (x: number, y: number) => {
     if (!drawing) {
       return;
     }
-
-    currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
 
     drawing = false;
 
     ctx.lineTo(x, y);
     ctx.stroke();
+
+    currentBlock.data.drawings[currentBlock.data.drawings.length - 1].points.push({ x, y });
+
+    if (currentBlock.localId) {
+      await updateBlock({
+        ...currentBlock
+      })
+    } else {
+      currentBlock = await addBlock(currentBlock)
+    }
   };
 
   function preventDefault(e) {
