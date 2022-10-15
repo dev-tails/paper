@@ -29,8 +29,6 @@ async function init() {
     return;
   }
 
-  ctx.translate(0.5, 0.5);
-
   const blocks = await getAllBlocks();
   let currentBlockIndex = -1;
 
@@ -89,6 +87,10 @@ async function init() {
     onLeftClicked: handleLeft,
     onRightClicked: handleRight,
     async onDeleteClicked() {
+      if (!confirm("Are you sure you want to delete this page?")) {
+        return;
+      }
+
       await removeBlock(currentBlock.localId);
       sortedBlocks = sortedBlocks.filter((b) => {
         return b.localId !== currentBlock.localId
@@ -125,6 +127,9 @@ async function init() {
   canvas.style.width = `${rect.width}px`;
   canvas.style.height = `${rect.height}px`;
 
+  ctx.translate(0.5, 0.5);
+  ctx.lineCap = "square";
+
   let currentBlock: Block = {
     createdAt: new Date(),
     data: {
@@ -155,16 +160,23 @@ async function init() {
 
     ctx.beginPath();
     ctx.moveTo(x, y);
+    ctx.fillRect(x, y, 1, 1);
   };
 
   const draw = (x: number, y: number) => {
     if (drawing) {
       if (currentTool === "pencil") {
-        currentBlock.data.drawings[
+        const points = currentBlock.data.drawings[
           currentBlock.data.drawings.length - 1
-        ].points.push({ x, y });
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        ].points
+        const lastPoint = points[points.length - 1];
+
+        const storeNewPointThreshold = 1;
+        if (Math.abs(lastPoint.x - x) > storeNewPointThreshold || Math.abs(lastPoint.y - y) > storeNewPointThreshold) {
+          points.push({ x, y });
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
       } else if(currentTool === "eraser") {
         const drawingsToRemove: any[] = [];
         for (const drawing of currentBlock.data.drawings) {
@@ -220,7 +232,7 @@ async function init() {
     "pointerdown",
     (e) => {
       if (allowedPointers.includes(e.pointerType)) {
-        startDrawing(e.offsetX, e.offsetY);
+        startDrawing(Math.round(e.offsetX), Math.round(e.offsetY));
       }
     }
   );
@@ -229,7 +241,7 @@ async function init() {
     "pointermove",
     (e) => {
       if (allowedPointers.includes(e.pointerType)) {
-        draw(e.offsetX, e.offsetY);
+        draw(Math.round(e.offsetX), Math.round(e.offsetY));
       }
     }
   );
@@ -238,7 +250,7 @@ async function init() {
     "pointerup",
     (e) => {
       if (allowedPointers.includes(e.pointerType)) {
-        endDrawing(e.offsetX, e.offsetY);
+        endDrawing(Math.round(e.offsetX), Math.round(e.offsetY));
       }
     },
     true
